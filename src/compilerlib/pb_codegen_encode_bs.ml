@@ -136,22 +136,12 @@ let gen_rft_repeated sc var_name rf_label repeated_field =
   
   (* User defined *)
   | Ot.Ft_user_defined_type udt, Ot.Pk_bytes -> 
-    F.linep sc "let %s' = List.map (fun v ->" rf_label;
-    F.scope sc (fun sc -> 
-      F.line sc "let json' = Js.Dict.empty () in"; 
-      let f_name = 
-        let function_prefix = "encode" in
-        let module_suffix = "bs" in 
-        Pb_codegen_util.bs_function_name_of_user_defined
-          ~module_suffix udt
-      in 
-
-      F.linep sc "%s v json';" f_name;
-      F.linep sc "Js.Dict.set json \"%s\" json';" 
-        json_label;
-      F.line sc "json' |> Array.of_list";
-    ); 
-    F.linep sc ") %s in" var_name;
+    let f_name =
+      let module_suffix = "bs" in
+      Pb_codegen_util.bs_function_name_of_user_defined
+        ~module_suffix udt
+    in
+    F.linep sc "let %s' = List.map %s %s |> Array.of_list in" rf_label f_name var_name;
     F.linep sc "Js.Dict.set json \"%s\" (Js.Json.array %s');"
       json_label rf_label
 
